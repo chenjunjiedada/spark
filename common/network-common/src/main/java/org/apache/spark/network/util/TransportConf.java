@@ -23,7 +23,7 @@ import com.google.common.primitives.Ints;
  * A central location that tracks all the settings we expose to users.
  */
 public class TransportConf {
-
+  
   static {
     // Set this due to Netty PR #5661 for Netty 4.0.37+ to work
     System.setProperty("io.netty.maxDirectMemory", "0");
@@ -183,20 +183,10 @@ public class TransportConf {
   }
 
   /**
-   * Transformation string to specify algorithm/mode/padding for AES cipher, which is effective
-   * when AES cipher is enabled.
-   */
-  public String saslEncryptionAesCipherTransformation() {
-    return conf.get("spark.authenticate.sasl.encryption.aes.cipher.transformation",
-      "AES/CTR/NoPadding");
-  }
-
-  /**
    * The bits of AES cipher key which is effective when AES cipher is enabled. Notice that
    * the length should be 128, 192 or 256 bits.
    */
   public int saslEncryptionAesCipherKeySizeBits() {
     return conf.getInt("spark.authenticate.sasl.encryption.aes.cipher.keySizeBits", 128);
   }
-
 }

@@ -1069,31 +1069,10 @@ Apart from these, the following properties are also available, and may be useful
   </td>
 </tr>
 <tr>
-  <td><code>spark.driver.blockManager.port</code></td>
-  <td>(value of spark.blockManager.port)</td>
-  <td>
-    Driver-specific port for the block manager to listen on, for cases where it cannot use the same
-    configuration as executors.
-  </td>
-</tr>
-<tr>
-  <td><code>spark.driver.bindAddress</code></td>
-  <td>(value of spark.driver.host)</td>
-  <td>
-    <p>Hostname or IP address where to bind listening sockets. This config overrides the SPARK_LOCAL_IP
-    environment variable (see below).</p>
-
-    <p>It also allows a different address from the local one to be advertised to executors or external systems.
-    This is useful, for example, when running containers with bridged networking. For this to properly work,
-    the different ports used by the driver (RPC, block manager and UI) need to be forwarded from the
-    container's host.</p>
-  </td>
-</tr>
-<tr>
   <td><code>spark.driver.host</code></td>
   <td>(local hostname)</td>
   <td>
-    Hostname or IP address for the driver.
+    Hostname or IP address for the driver to listen on.
     This is used for communicating with the executors and the standalone Master.
   </td>
 </tr>
@@ -1243,49 +1222,6 @@ Apart from these, the following properties are also available, and may be useful
   <td>1s</td>
   <td>
     The interval length for the scheduler to revive the worker resource offers to run tasks.
-  </td>
-</tr>
-<tr>
-  <td><code>spark.blacklist.enabled</code></td>
-  <td>
-    false
-  </td>
-  <td>
-    If set to "true", prevent Spark from scheduling tasks on executors that have been blacklisted
-    due to too many task failures. The blacklisting algorithm can be further controlled by the
-    other "spark.blacklist" configuration options.
-  </td>
-</tr>
-<tr>
-  <td><code>spark.blacklist.task.maxTaskAttemptsPerExecutor</code></td>
-  <td>1</td>
-  <td>
-    (Experimental) For a given task, how many times it can be retried on one executor before the
-    executor is blacklisted for that task.
-  </td>
-</tr>
-<tr>
-  <td><code>spark.blacklist.task.maxTaskAttemptsPerNode</code></td>
-  <td>2</td>
-  <td>
-    (Experimental) For a given task, how many times it can be retried on one node, before the entire
-    node is blacklisted for that task.
-  </td>
-</tr>
-<tr>
-  <td><code>spark.blacklist.stage.maxFailedTasksPerExecutor</code>
-  <td>2</td>
-  <td>
-    (Experimental) How many different tasks must fail on one executor, within one stage, before the
-    executor is blacklisted for that stage.
-  </td>
-</tr>
-<tr>
-  <td><code>spark.blacklist.stage.maxFailedExecutorsPerNode</code></td>
-  <td>2</td>
-  <td>
-    (Experimental) How many different executors are marked as blacklisted for a given stage, before
-    the entire node is marked as failed for the stage.
   </td>
 </tr>
 <tr>
@@ -1504,14 +1440,6 @@ Apart from these, the following properties are also available, and may be useful
   <td>
     Enable AES cipher as SASL authentication encryption backend, when SASL authentication
     is enabled.
-  </td>
-</tr>
-<tr>
-  <td><code>spark.authenticate.sasl.encryption.aes.cipher.transformation</code></td>
-  <td>AES/CTR/NoPadding</td>
-  <td>
-    Specify the algorithm/mode/padding of AES cipher when AES cipher is enabled
-    for SASL authentication. Currently, it supports AES/CTR/NoPadding and AES/CBC/NoPadding.
   </td>
 </tr>
 <tr>
