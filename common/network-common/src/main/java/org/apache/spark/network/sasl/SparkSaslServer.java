@@ -20,6 +20,8 @@ package org.apache.spark.network.sasl;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Properties;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -30,8 +32,6 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
-import java.util.Map;
-import java.util.Properties;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.spark.network.client.RpcResponseCallback;
-import org.apache.spark.network.sasl.aes.AesCipherOption;
+import org.apache.spark.network.sasl.aes.AesConfigMessage;
 import org.apache.spark.network.sasl.aes.AesCipher;
 import org.apache.spark.network.util.TransportConf;
 
@@ -165,14 +165,15 @@ public class SparkSaslServer implements SaslEncryptionBackend {
    * @param message is message receive from peer which may contains communication parameters.
    * @param callback is rpc callback.
    * @param conf contains transport configuration.
-   * @return Object which represent the result of negotiate.
+   * @return Object which represent the result of negotiateAesSessionKey.
    */
-  public Object negotiate(ByteBuffer message, RpcResponseCallback callback, TransportConf conf)
-    throws SaslException {
+  public AesCipher negotiateAesSessionKey(ByteBuffer message, RpcResponseCallback callback, TransportConf conf)
+   {
     AesCipher cipher;
 
     // Receive initial option from client
-    AesCipherOption cipherOption = AesCipherOption.decode(Unpooled.wrappedBuffer(message));
+    AesConfigMessage cipherOption = new AesConfigMessage(null, null, null, null);
+    //  AesConfigMessage.decode(Unpooled.wrappedBuffer(message));
     String transformation = AesCipher.TRANSFORM;
     Properties properties = new Properties();
 
@@ -190,7 +191,6 @@ public class SparkSaslServer implements SaslEncryptionBackend {
       byte[] inIv = new byte[paramLen];
       byte[] outIv = new byte[paramLen];
 
-      // Get the 'CryptoRandom' instance.
       CryptoRandom random = CryptoRandomFactory.getCryptoRandom(properties);
       random.nextBytes(inKey);
       random.nextBytes(outKey);
@@ -209,7 +209,7 @@ public class SparkSaslServer implements SaslEncryptionBackend {
       cipherOption.encode(buf);
       callback.onSuccess(buf.nioBuffer());
     } catch (Exception e) {
-      logger.error("AES negotiation exception: ", e);
+      logger.error("AES negotiation exception ", e);
       throw Throwables.propagate(e);
     }
 
