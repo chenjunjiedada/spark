@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.spark.network.client.TransportClient;
 import org.apache.spark.network.client.TransportClientBootstrap;
+import org.apache.spark.network.sasl.aes.AesCipher;
+import org.apache.spark.network.sasl.aes.AesConfigMessage;
 import org.apache.spark.network.util.JavaUtils;
 import org.apache.spark.network.util.TransportConf;
 
@@ -88,7 +90,35 @@ public class SaslClientBootstrap implements TransportClientBootstrap {
           throw new RuntimeException(
             new SaslException("Encryption requests by negotiated non-encrypted connection."));
         }
-        SaslEncryption.addToChannel(channel, saslClient, conf.maxSaslEncryptedBlockSize());
+
+        if (conf.saslEncryptionAesEnabled()) {
+          // Generate a request config message to send to server.
+          AesConfigMessage reqConfigMessage = AesCipher.requestConfigMessage(conf);
+          ByteBuffer buf = reqConfigMessage.encodeMessage();
+
+          ByteBuffer response = client.sendRpcSync(buf, conf.saslRTTimeoutMs());
+
+          // Decrypt the config message.
+          ByteBuffer decrypted = ByteBuffer.wrap(
+            saslClient.unwrap(response.array(), 0, response.array().length));
+
+          AesConfigMessage configMessage = AesConfigMessage.decodeMessage(decrypted);
+
+          // Exchange the key and IV
+          configMessage.setParameters(
+            configMessage.keySize,
+            configMessage.outKey,
+            configMessage.outIv,
+            configMessage.inKey,
+            configMessage.inIv
+          );
+
+          AesCipher cipher = new AesCipher(configMessage);
+          logger.info("Enabling AES cipher for client channel {}", client);
+          cipher.addToChannel(channel);
+        } else {
+          SaslEncryption.addToChannel(channel, saslClient, conf.maxSaslEncryptedBlockSize());
+        }
         saslClient = null;
         logger.debug("Channel {} configured for SASL encryption.", client);
       }
