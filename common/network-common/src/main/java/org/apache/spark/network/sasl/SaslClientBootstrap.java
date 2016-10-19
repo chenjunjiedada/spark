@@ -94,24 +94,22 @@ public class SaslClientBootstrap implements TransportClientBootstrap {
         if (conf.saslEncryptionAesEnabled()) {
           // Generate a request config message to send to server.
           AesConfigMessage reqConfigMessage = AesCipher.requestConfigMessage(conf);
-          ByteBuffer buf = ByteBuffer.allocate(reqConfigMessage.encodedLength());
-          reqConfigMessage.encodeMessage(buf);
+          ByteBuffer buf = reqConfigMessage.encodeMessage();
 
           ByteBuffer response = client.sendRpcSync(buf, conf.saslRTTimeoutMs());
 
-          // Receive negotiated config message from server.
-          AesConfigMessage configMessage = AesConfigMessage.decodeMessage(response);
+          // Decrypt the config message.
+          ByteBuffer decrypted = ByteBuffer.wrap(
+            saslClient.unwrap(response.array(), 0, response.array().length));
 
-          // Decrypt key in order of inKey then outKey.
-          byte[] inKey = saslClient.unwrap(configMessage.inKey, 0, configMessage.inKey.length);
-          byte[] outKey = saslClient.unwrap(configMessage.outKey, 0, configMessage.outKey.length);
+          AesConfigMessage configMessage = AesConfigMessage.decodeMessage(decrypted);
 
-          // Server's outKey and outIv are client inKey and inIv
+          // Exchange the key and IV
           configMessage.setParameters(
             configMessage.keySize,
-            outKey,
+            configMessage.outKey,
             configMessage.outIv,
-            inKey,
+            configMessage.inKey,
             configMessage.inIv
           );
 

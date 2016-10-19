@@ -140,21 +140,12 @@ class SaslRpcHandler extends RpcHandler {
             configMessage = AesCipher.responseConfigMessage(configMessage);
             AesCipher cipher = new AesCipher(configMessage);
 
-            // Encrypt the config message and send to client.
-            byte[] inKey = saslServer.wrap(configMessage.inKey, 0, configMessage.inKey.length);
-            byte[] outKey = saslServer.wrap(configMessage.outKey, 0, configMessage.outKey.length);
+            ByteBuffer buf = configMessage.encodeMessage();
 
-            configMessage.setParameters(
-              configMessage.keySize,
-              inKey,
-              configMessage.inIv,
-              outKey,
-              configMessage.outIv
-            );
-
-            ByteBuffer buf = ByteBuffer.allocate(configMessage.encodedLength());
-            configMessage.encodeMessage(buf);
-            callback.onSuccess(buf);
+            // Encrypt the config message.
+            ByteBuffer encrypted = ByteBuffer.wrap(
+              saslServer.wrap(buf.array(), 0, buf.array().length));
+            callback.onSuccess(encrypted);
 
             logger.info("Enabling AES cipher for Server channel {}", client);
             cipher.addToChannel(channel);

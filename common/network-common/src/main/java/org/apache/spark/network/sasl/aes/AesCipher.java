@@ -128,6 +128,11 @@ public class AesCipher {
       .addFirst(DECRYPTION_HANDLER_NAME, new AesDecryptHandler(this));
   }
 
+  /**
+   * Generate a request config message which send to remote peer.
+   * @param conf is the local transport configuration.
+   * @return Config message for sending.
+   */
   public static AesConfigMessage requestConfigMessage(TransportConf conf) {
     int keySize = conf.saslEncryptionAesCipherKeySizeBits();
     if (keySize % 8 != 0) {
@@ -137,6 +142,11 @@ public class AesCipher {
     return new AesConfigMessage(keySize/8, null, null, null, null);
   }
 
+  /**
+   * Generate the configuration message according to request config message.
+   * @param configMessage The request config message comes from remote.
+   * @return Configuration message for sending.
+   */
   public static AesConfigMessage responseConfigMessage(AesConfigMessage configMessage){
 
     Properties properties = new Properties();
