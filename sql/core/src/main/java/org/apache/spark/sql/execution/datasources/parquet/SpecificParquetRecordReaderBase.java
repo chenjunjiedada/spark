@@ -50,6 +50,8 @@ import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.values.ValuesReader;
 import org.apache.parquet.column.values.rle.RunLengthBitPackingHybridDecoder;
 import org.apache.parquet.filter2.compat.FilterCompat;
+import org.apache.parquet.filter2.compat.RowGroupFilter;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.BadConfigurationException;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputFormat;
@@ -106,7 +108,13 @@ public abstract class SpecificParquetRecordReaderBase<T> extends RecordReader<Vo
       footer = readFooter(configuration, file, range(split.getStart(), split.getEnd()));
       MessageType fileSchema = footer.getFileMetaData().getSchema();
       FilterCompat.Filter filter = getFilter(configuration);
-      blocks = filterRowGroups(filter, footer.getBlocks(), fileSchema);
+      //blocks = filterRowGroups(filter, footer.getBlocks(), fileSchema);
+      List<RowGroupFilter.FilterLevel> levels = new ArrayList<>();
+      levels.add(RowGroupFilter.FilterLevel.STATISTICS);
+      levels.add(RowGroupFilter.FilterLevel.BLOOM);
+      ParquetFileReader reader = new ParquetFileReader(configuration, file,
+              ParquetMetadataConverter.NO_FILTER);
+      blocks = filterRowGroups(levels, filter, footer.getBlocks(), reader);
     } else {
       // otherwise we find the row groups that were selected on the client
       footer = readFooter(configuration, file, NO_FILTER);

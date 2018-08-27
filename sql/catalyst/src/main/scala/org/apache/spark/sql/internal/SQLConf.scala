@@ -381,6 +381,21 @@ object SQLConf {
       .booleanConf
       .createWithDefault(true)
 
+  val PARQUET_ENABLE_BLOOM_FILTER = buildConf("spark.sql.parquet.enable.bloom.filter")
+      .doc("to be added")
+      .booleanConf
+      .createWithDefault(false)
+
+   val PARQUET_BLOOM_FILTER_SIZE = buildConf("spark.sql.parquet.bloom.filter.size")
+      .doc("to be added")
+      .intConf
+      .createWithDefault(4194304)
+
+   val PARQUET_BLOOM_FILTER_COL_NAME = buildConf("spark.sql.parquet.bloom.filter.col.names")
+      .doc("to be added")
+      .stringConf
+      .createWithDefaultString("")
+
   val ORC_COMPRESSION = buildConf("spark.sql.orc.compression.codec")
     .doc("Sets the compression codec used when writing ORC files. If either `compression` or " +
       "`orc.compress` is specified in the table-specific options/properties, the precedence " +
@@ -1259,6 +1274,12 @@ class SQLConf extends Serializable with Logging {
   def parquetCompressionCodec: String = getConf(PARQUET_COMPRESSION)
 
   def parquetVectorizedReaderEnabled: Boolean = getConf(PARQUET_VECTORIZED_READER_ENABLED)
+
+  def enableParquetBloomFilter: Boolean = getConf(PARQUET_ENABLE_BLOOM_FILTER)
+
+  def parquetBloomFilterSize: Int = getConf(PARQUET_BLOOM_FILTER_SIZE)
+
+  def parquetBloomFilterColNames: String = getConf(PARQUET_BLOOM_FILTER_COL_NAME)
 
   def columnBatchSize: Int = getConf(COLUMN_BATCH_SIZE)
 

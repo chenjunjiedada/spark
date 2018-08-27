@@ -124,6 +124,15 @@ class ParquetFileFormat
     // Sets compression scheme
     conf.set(ParquetOutputFormat.COMPRESSION, parquetOptions.compressionCodecClassName)
 
+    conf.set(ParquetOutputFormat.ENABLE_BLOOM_FILTER,
+        sparkSession.sessionState.conf.enableParquetBloomFilter.toString)
+
+    conf.set(ParquetOutputFormat.BLOOM_FILTER_COLUMN_NAMES,
+        sparkSession.sessionState.conf.parquetBloomFilterColNames.toString)
+
+    conf.set(ParquetOutputFormat.BLOOM_FILTER_SIZE,
+        sparkSession.sessionState.conf.parquetBloomFilterSize.toString)
+
     // SPARK-15719: Disables writing Parquet summary files by default.
     if (conf.get(ParquetOutputFormat.ENABLE_JOB_SUMMARY) == null) {
       conf.setBoolean(ParquetOutputFormat.ENABLE_JOB_SUMMARY, false)
